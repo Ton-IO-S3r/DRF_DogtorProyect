@@ -7,26 +7,25 @@ from rest_framework import serializers
 from .models import Pet, PetOwner
 
 #Serializers
-from .serializers import PetOwnersListSerializer, PetsListSerializer
+from .serializers import PetOwnersListSerializer, PetOwnerSerializer, PetsListSerializer
 
 # Create your views here.
-class PetOwnersList(APIView):
+class PetOwnersListCreate(APIView):
   """
     View to list all pet owners in the system
   """
   serializer_class = PetOwnersListSerializer
   def get(self, request):
-
-    # owners = [
-    #   {
-    #     'id': owner.id,
-    #     'name': owner.first_name,
-    #   }
-    #   for owner in PetOwner.objects.all()]
     owners_queryset = PetOwner.objects.all()
     serializer = self.serializer_class(owners_queryset, many = True)
-
     return Response(data=serializer.data)  
+  
+  def post(self, request):
+    serializer = PetOwnerSerializer(data = request.data)
+    serializer.is_valid(raise_exception = True)
+    created_instance = serializer.save()
+    print(created_instance.__dict__)
+    return Response({})
 
 class PetsList(APIView):
   """
@@ -34,14 +33,6 @@ class PetsList(APIView):
   """
   serializer_class = PetsListSerializer
   def get(self, request):
-    # pets = [
-    #   {
-    #     'id': pet.id,
-    #     'name': pet.name,
-    #     'type': pet.type,
-    #     'owner': f'{pet.owner.first_name} {pet.owner.last_name}'
-    #   }
-    # for pet in Pet.objects.all()]
     pets_queryset = Pet.objects.all()
     serializer = self.serializer_class(pets_queryset, many = True)
     return Response(data=serializer.data) 
