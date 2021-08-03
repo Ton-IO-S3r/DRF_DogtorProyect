@@ -1,3 +1,4 @@
+from rest_framework import status
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -8,10 +9,17 @@ from django.shortcuts import get_object_or_404
 from .models import Pet, PetOwner
 
 #Serializers
-from .serializers import PetOwnersListSerializer, PetOwnerSerializer, PetsListSerializer, PetSerializer
+from .serializers import (
+  PetOwnersListSerializer, 
+  PetOwnerSerializer,
+  PetUpdateSerializer, 
+  PetsListSerializer, 
+  PetSerializer, 
+  PetOwnerUpdateSerializer
+)
 
 # Create your views here.
-class PetOwnersListCreate(APIView):
+class PetOwnersListCreateAPIView(APIView):
   """
     View to list all pet owners in the system
   """
@@ -25,10 +33,10 @@ class PetOwnersListCreate(APIView):
     serializer = PetOwnerSerializer(data = request.data)
     serializer.is_valid(raise_exception = True)
     created_instance = serializer.save()
-    print(created_instance.__dict__)
-    return Response({})
+    serialized_instance = PetOwnerSerializer(created_instance)
+    return Response(serialized_instance.data, status= status.HTTP_201_CREATED)
 
-class PetsListCreate(APIView):
+class PetsListCreateAPIView(APIView):
   """
     View to list all pets in the system
   """
@@ -42,10 +50,10 @@ class PetsListCreate(APIView):
     serializer = PetSerializer(data = request.data)
     serializer.is_valid(raise_exception = True)
     created_instance = serializer.save()
-    print(created_instance.__dict__)
-    return Response({})
+    serialized_instance = PetSerializer(created_instance)
+    return Response(serialized_instance.data, status= status.HTTP_201_CREATED)
 
-class PetOwnerDetailAPIView(APIView):
+class PetOwnerRetrieveUpdateDestroyAPIView(APIView):
   """
     View to show details of selected owner in the system
   """
@@ -54,8 +62,21 @@ class PetOwnerDetailAPIView(APIView):
     owner_queryset = get_object_or_404(PetOwner, id=pk)
     serializer = self.serializer_class(owner_queryset)
     return Response(data=serializer.data)
+  
+  def patch(self, request, pk):
+    owner = get_object_or_404(PetOwner, id=pk)
+    serializer = PetOwnerUpdateSerializer(instance=owner, data=request.data)
+    serializer.is_valid(raise_exception=True)
+    updated_instance = serializer.save()
+    serialized_instance = self.serializer_class(updated_instance)
+    return Response(serialized_instance.data)
+  
+  def delete(self, request, pk):
+    owner = get_object_or_404(PetOwner, id=pk)
+    owner.delete()
+    return Response(status.HTTP_204_NO_CONTENT)
 
-class PetDetailAPIView(APIView):
+class PetRetreiveUpdateDestroyAPIView(APIView):
   """
     View to show details of selected pet in the system
   """
@@ -64,3 +85,16 @@ class PetDetailAPIView(APIView):
     pet_queryset = get_object_or_404(Pet, id=pk)
     serializer=self.serializer_class(pet_queryset)
     return Response(data = serializer.data)
+  
+  def patch(self, request, pk):
+    pet = get_object_or_404(Pet, id=pk)
+    serializer = PetUpdateSerializer(instance = pet, data=request.data)
+    serializer.is_valid(raise_exception = True)
+    updated_instance = serializer.save()
+    serialized_instance = self.serializer_class(updated_instance)
+    return Response(serialized_instance.data)
+  
+  def delete(self, request, pk):
+    pet = get_object_or_404(Pet, id=pk)
+    pet.delete()
+    return Response(status.HTTP_204_NO_CONTENT)
