@@ -2,10 +2,16 @@ from rest_framework import serializers
 from rest_framework.views import APIView
 from .models import Pet, PetOwner
 
-class PetOwnersListSerializer(serializers.Serializer):
-  id = serializers.IntegerField()
-  first_name = serializers.CharField()    
-  last_name = serializers.CharField()
+
+# class PetOwnersListSerializer(serializers.Serializer):
+#   id = serializers.IntegerField()
+#   first_name = serializers.CharField()    
+#   last_name = serializers.CharField()
+class PetOwnersListSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = PetOwner
+    fields = ['id','first_name', 'last_name']
+
 
 class PetOwnerSerializer(serializers.Serializer):
   id = serializers.ReadOnlyField()
@@ -33,23 +39,27 @@ class PetOwnerUpdateSerializer(serializers.Serializer):
     return instance
 
 
-class PetsListSerializer(serializers.Serializer):
-  id = serializers.IntegerField()
-  name = serializers.CharField()    
-  type = serializers.CharField()
+# class PetsListSerializer(serializers.Serializer):
+#   id = serializers.IntegerField()
+#   name = serializers.CharField()    
+#   type = serializers.CharField()
+class PetsListSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Pet
+    fields = ['id', 'name', 'type']
 
 class PetSerializer(serializers.Serializer):
   id = serializers.ReadOnlyField()
   name = serializers.CharField(max_length = 255)
   type = serializers.CharField(max_length = 50)
-  owner = serializers.PrimaryKeyRelatedField(queryset = PetOwner.objects.all())
+  owner_id = serializers.IntegerField()
   def create(self, validated_data):
     return Pet.objects.create(**validated_data)
 
 class PetUpdateSerializer(serializers.Serializer):
   name = serializers.CharField(max_length = 255, required = False)
   type = serializers.CharField(max_length = 50, required = False)
-  owner = serializers.PrimaryKeyRelatedField(queryset = PetOwner.objects.all(), required = False)
+  owner_id = serializers.IntegerField()
 
   def update(self, instance, validated_data):
     instance.name = validated_data.get('name', instance.name)
