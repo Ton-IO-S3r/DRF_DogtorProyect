@@ -27,12 +27,7 @@ class PetModelSerializer(serializers.ModelSerializer):
     fields = ['id', 'name', 'type', 'owner']
   
 
-class PetDatesModelSerializer(serializers.ModelSerializer):
-  class Meta:
-    model = PetDate
-    fields = ['id','datetime','pet']
-
-class PetDateModelSerializer(serializers.ModelSerializer):
+class PetDatesListModelSerializer(serializers.ModelSerializer):
   class Meta:
     model = PetDate
     fields = ['id','datetime','pet','type']

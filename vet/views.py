@@ -1,18 +1,13 @@
-from rest_framework import status, generics
-from django.shortcuts import render
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import serializers
-from django.shortcuts import get_object_or_404
+from rest_framework import generics, filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 #Modelos
 from .models import Pet, PetDate, PetOwner
 
 #Serializers
 from .serializers import (
-  PetDateModelSerializer,
+  PetDatesListModelSerializer,
   PetDateUpdateModelSerializer,
-  PetDatesModelSerializer,
   PetOwnersListModelSerializer, 
   PetOwnerModelSerializer, 
   PetsListModelSerializer, 
@@ -24,15 +19,10 @@ from .serializers import (
 class PetOwnersListCreateAPIView(generics.ListCreateAPIView):
   queryset = PetOwner.objects.all()
   serializer_class = PetOwnersListModelSerializer
-
-  def get_queryset(self):
-
-      first_name_filter = self.request.GET.get("first_name")
-      filters = {}
-      if first_name_filter:
-          filters["first_name__icontains"] = first_name_filter
-
-      return self.queryset.filter(**filters)
+  filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+  search_fields = ['first_name','last_name']
+  ordering_fields = ['email']
+  # filterset_fields = ['first_name', 'last_name']
 
   def get_serializer_class(self):
       serializer_class = self.serializer_class
@@ -52,15 +42,6 @@ class PetsListCreateAPIView(generics.ListCreateAPIView):
   queryset = Pet.objects.all()
   serializer_class = PetsListModelSerializer
 
-  def get_queryset(self):
-
-      first_name_filter = self.request.GET.get("first_name")
-      filters = {}
-      if first_name_filter:
-          filters["first_name__icontains"] = first_name_filter
-
-      return self.queryset.filter(**filters)
-
   def get_serializer_class(self):
       serializer_class = self.serializer_class
       if self.request.method == "POST":
@@ -75,22 +56,24 @@ class PetsRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 #PETS APPOINMENTS
 class PetDatesListCreateAPIView(generics.ListCreateAPIView):
   queryset = PetDate.objects.all()
-  serializer_class = PetDateModelSerializer
-  def get_queryset(self):
-      pet_filter = self.request.GET.get("pet_id")
-      owner_filter =  self.request.GET.get("owner_id")
-      filters = {}
-      if pet_filter:
-        filters["pet__in"] = pet_filter
-      if owner_filter:
-        filters["pet__owner__in"] = owner_filter
+  serializer_class = PetDatesListModelSerializer
+  filter_backends = [filters.SearchFilter]
+  search_fields = ['pet__owner__first_name']
+  # def get_queryset(self):
+  #     pet_filter = self.request.GET.get("pet_id")
+  #     owner_filter =  self.request.GET.get("owner_id")
+  #     filters = {}
+  #     if pet_filter:
+  #       filters["pet__in"] = pet_filter
+  #     if owner_filter:
+  #       filters["pet__owner__in"] = owner_filter
 
-      return self.queryset.filter(**filters)
+  #     return self.queryset.filter(**filters)
 
   def get_serializer_class(self):
       serializer_class = self.serializer_class
       if self.request.method == "POST":
-          serializer_class = PetDateModelSerializer
+          serializer_class = PetDatesListModelSerializer
 
       return serializer_class
 
